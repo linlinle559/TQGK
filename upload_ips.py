@@ -12,7 +12,7 @@ commit_message = "Update bestcf IP list"
 # API 地址
 csv_url = "https://ipdb.030101.xyz/bestcf/api/bestcf.csv"
 custom_suffix = "可变"  # 可自定义后缀
-limit_count = 5  # 限制提取前 5 个 IP，改成 10 以提取 10 个
+limit_count = 10  # 限制提取前 5 个 IP，改成 10 以提取 10 个
 
 def download_csv(url):
     response = requests.get(url)
