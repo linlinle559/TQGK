@@ -15,7 +15,7 @@ jobs:
       - name: 🛠️ 检查出仓库
         uses: actions/checkout@v3
         with:
-          persist-credentials: false  # 关闭默认身份认证
+          persist-credentials: false  # 关闭默认认证，改用 GITHUB_TOKEN
 
       - name: 🌐 获取 IP 地址
         run: |
@@ -26,7 +26,7 @@ jobs:
             echo "❌ 获取 IP 失败，保留旧数据"
             git checkout -- ips.txt
           fi
-          cat ips.txt  # 输出 IP 结果
+          cat ips.txt  # 输出 IP 数据
 
       - name: 🔄 提交更新
         run: |
