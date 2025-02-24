@@ -10,7 +10,7 @@ file_path = "yxip.txt"  # 存储 IP 列表的文件路径
 commit_message = "Update bestcf IP list"
 
 # API 地址
-csv_url = "https://ipdb.030101.xyz/bestcf/api/bestcf.csv"
+csv_url = "https://ipdb.030101.xyz/api/bestcf.csv"
 custom_suffix = "可变"  # 可自定义后缀
 limit_count = 10  # 限制提取前 5 个 IP，改成 10 以提取 10 个
 
