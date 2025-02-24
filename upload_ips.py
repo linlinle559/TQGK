@@ -1,43 +1,46 @@
+import requests
+import csv
 import os
 from github import Github
 
-# 获取 GitHub Token（使用自定义 secret）
-GITHUB_TOKEN = os.getenv("MY_GITHUB_TOKEN")  # 获取环境变量
+# GitHub 配置
+github_token = os.getenv("MY_GITHUB_TOKEN")
+repo_name = "jzhou9096/jilianip"  # 替换为你的 GitHub 仓库路径
+file_path = "yxip.txt"  # 存储 IP 列表的文件路径
+commit_message = "Update bestcf IP list"
 
-if GITHUB_TOKEN is None:
-    print("Error: MY_GITHUB_TOKEN is not set.")
-    exit(1)
+# API 地址
+csv_url = "https://ipdb.030101.xyz/bestcf/api/bestcf.csv"
+custom_suffix = "可变"  # 可自定义后缀
 
-REPO_NAME = "jzhou9096/jilianip"  # 替换为你的仓库
-FILE_PATH = "yxip.txt"  # 替换为文件路径（如 data.txt）
-WEBPAGE_URL = "https://tqyb.jzhou9096.workers.dev"  # 替换为目标网页 URL
+def download_csv(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.text
 
-def fetch_webpage_content(url):
-    import requests
+def extract_ips(csv_content):
+    ips = []
+    reader = csv.reader(csv_content.splitlines())
+    for row in reader:
+        if row and row[0].count('.') == 3:  # 简单检查 IPv4 地址格式
+            ips.append(f"{row[0]}#{custom_suffix}")
+    return ips
+
+def upload_to_github(token, repo_name, file_path, content, commit_message):
+    g = Github(token)
+    repo = g.get_repo(repo_name)
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.text
-    except requests.RequestException as e:
-        print(f"Error fetching webpage: {e}")
-        return None
-
-def write_to_github(content):
-    g = Github(GITHUB_TOKEN)
-    repo = g.get_repo(REPO_NAME)
-    try:
-        file = repo.get_contents(FILE_PATH)
-        repo.update_file(FILE_PATH, "Updated content", content, file.sha, branch="main")
-        print("File updated successfully on GitHub.")
-    except Exception as e:
-        print(f"Error writing to GitHub: {e}")
+        file = repo.get_contents(file_path)
+        repo.update_file(file.path, commit_message, content, file.sha)
+    except:
+        repo.create_file(file_path, commit_message, content)
 
 def main():
-    print("Fetching webpage content...")
-    content = fetch_webpage_content(WEBPAGE_URL)
-    if content:
-        print("Writing content to GitHub...")
-        write_to_github(content)
+    csv_content = download_csv(csv_url)
+    ip_list = extract_ips(csv_content)
+    file_content = "\n".join(ip_list)
+    upload_to_github(github_token, repo_name, file_path, file_content, commit_message)
+    print("Upload completed.")
 
 if __name__ == "__main__":
     main()
