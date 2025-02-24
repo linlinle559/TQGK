@@ -17,13 +17,30 @@ jobs:
 
       - name: 🌐 获取 IP 地址
         run: |
-          curl -s https://ipdb.030101.xyz/bestcf/ | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u > yxtp.txt
-          cat yxtp.txt  # 打印输出看看
+          # 确保仓库有 ips.txt
+          touch ips.txt
+
+          # 获取最新的 Cloudflare IP
+          curl -s https://ipdb.030101.xyz/bestcf/ | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u > ips.txt
+          
+          # 如果文件是空的，则回滚（防止清空 IP 列表）
+          if [ ! -s ips.txt ]; then
+            echo "❌ 获取 IP 失败，保持原来的 IP 列表"
+            git checkout -- ips.txt
+          fi
+          
+          cat ips.txt  # 打印 IP 结果
 
       - name: 🔄 提交更新
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add yxtp.txt
-          git commit -m "🔄 更新 Cloudflare IP 列表 $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
-          git push
+
+          # 确保仓库有文件
+          if [ -f ips.txt ]; then
+            git add ips.txt
+            git commit -m "🔄 更新 Cloudflare IP 列表 $(date '+%Y-%m-%d %H:%M:%S')" || echo "✅ 没有新 IP，跳过提交"
+            git push
+          else
+            echo "❌ 错误：ips.txt 文件不存在，跳过提交"
+          fi
