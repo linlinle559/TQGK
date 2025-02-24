@@ -10,8 +10,9 @@ file_path = "yxip.txt"  # 存储 IP 列表的文件路径
 commit_message = "Update bestcf IP list"
 
 # API 地址
-csv_url = "https://ipdb.030101.xyz/api/bestcf.csv"
-custom_suffix = "优选IP"  # 可自定义后缀
+csv_url = "https://ipdb.030101.xyz/bestcf/api/bestcf.csv"
+custom_suffix = "可变"  # 可自定义后缀
+limit_count = 5  # 限制提取前 5 个 IP，改成 10 以提取 10 个
 
 def download_csv(url):
     response = requests.get(url)
@@ -24,6 +25,8 @@ def extract_ips(csv_content):
     for row in reader:
         if row and row[0].count('.') == 3:  # 简单检查 IPv4 地址格式
             ips.append(f"{row[0]}#{custom_suffix}")
+        if len(ips) >= limit_count:  # 达到限制数量后停止
+            break
     return ips
 
 def upload_to_github(token, repo_name, file_path, content, commit_message):
