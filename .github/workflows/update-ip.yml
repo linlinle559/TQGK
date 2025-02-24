@@ -1,0 +1,29 @@
+name: Update Cloudflare IP List
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # 每6小时更新一次
+  workflow_dispatch:  # 允许手动运行
+  push:
+    branches:
+      - main
+
+jobs:
+  update_ips:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛠️ 检查出仓库
+        uses: actions/checkout@v3
+
+      - name: 🌐 获取 IP 地址
+        run: |
+          curl -s https://ipdb.030101.xyz/bestcf/ | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u > yxip.txt
+          cat yxip.txt  # 打印输出看看
+
+      - name: 🔄 提交更新
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add ips.txt
+          git commit -m "🔄 更新 Cloudflare IP 列表 $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+          git push
